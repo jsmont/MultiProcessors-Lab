@@ -15,6 +15,7 @@ end MECtra;
 architecture comportamiento of MECtra is
 type tipoestado is (PR,SE);
 signal EST, P_EST:tipoestado;
+signal llecoh, cohesp: std_logic;
 
 function flanco_ascendiente(signal reloj: std_logic)
 	return boolean is
@@ -25,9 +26,9 @@ end flanco_ascendiente;
 begin
 
 process(reloj,pcero) begin
-	if pcero='1' then EST<=PR;
+	if pcero='1' then EST<=PR; cohesp <= '0';
 	elsif flanco_ascendiente(reloj) then
-		EST <= P_EST;
+		EST <= P_EST; cohesp <= llecoh;
 	end if;
 end process;
 
@@ -61,5 +62,15 @@ process (EST, coche) begin
 			CS <= '0';
 	end case;
 end process;
-		
+
+llegcoh: process (EST, coche, cohesp, TIEMPO) begin
+	if (EST = PR and cohesp = '1' and TIEMPO = '1') then
+		llecoh <= '0';
+	elsif coche = '1' then
+		llecoh <= '1';
+	else
+		llecoh <= cohesp;
+	end if;
+end process;
+
 end comportamiento;
