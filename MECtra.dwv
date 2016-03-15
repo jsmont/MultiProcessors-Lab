@@ -32,36 +32,64 @@ process(reloj,pcero) begin
 	end if;
 end process;
 
-process(EST,coche,TIEMPO)begin
-	P_EST<= EST;
-	case EST is
-		when PR => if coche ='1' then
-			P_EST <= SE;
-		end if;
-		when SE => if TIEMPO ='1' then
-			P_EST <= PR;
-		end if;
-		when others => P_EST <= PR;
-	end case;
-end process;      
+--process(EST,coche,TIEMPO)begin
+--	P_EST<= EST;
+--	case EST is
+--		when PR => if coche ='1' then
+--			P_EST <= SE;
+--		end if;
+--		when SE => if TIEMPO ='1' then
+--			P_EST <= PR;
+--		end if;
+--		when others => P_EST <= PR;
+--	end case;
+--end process;      
 	
-process (EST, coche) begin
-	inic<='0';
+--process (EST, coche) begin
+--	inic<='0';
+--	case EST is
+--		when PR =>
+--			CP <= '1';
+--			CS <= '0';
+--			if coche='1' then
+--				INIC<='1';
+--			end if;
+--		when SE =>
+--			CP <= '0';
+--			CS <= '1';
+--		when others =>
+--			CP <= '1';
+--			CS <= '0';
+--	end case;
+--end process;
+
+
+-- DEFINICIO EN UN SOL PROCESS
+pr_est_sal: process (EST, cohesp, TIEMPO) begin
+	INIC <= '0';
 	case EST is
 		when PR =>
 			CP <= '1';
 			CS <= '0';
-			if coche='1' then
-				INIC<='1';
+			if cohesp = '1' and TIEMPO = '1' then
+				INIC <= '1';
+				P_EST <= SE;
+			else
+				P_EST <= PR;
 			end if;
 		when SE =>
 			CP <= '0';
 			CS <= '1';
-		when others =>
-			CP <= '1';
-			CS <= '0';
+			if TIEMPO = '1' then
+				INIC <= '1';
+				P_EST <= PR;
+			else
+				P_EST <= SE;
+			end if;
+		when others => CP <= '1'; CS <= '0'; P_EST <= PR;
 	end case;
 end process;
+
 
 llegcoh: process (EST, coche, cohesp, TIEMPO) begin
 	if (EST = PR and cohesp = '1' and TIEMPO = '1') then
