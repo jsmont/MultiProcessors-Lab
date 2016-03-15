@@ -81,7 +81,7 @@ pr_est_sal: process (EST, cohesp, TIEMPO) begin
 			CP <= '0';
 			CS <= '1';
 			if TIEMPO = '1' then
-				INIC <= '1';
+				--INIC <= '1';
 				P_EST <= PR;
 			else
 				P_EST <= SE;
