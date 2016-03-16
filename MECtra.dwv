@@ -8,14 +8,15 @@ entity MECtra is
       	inic: out std_logic;
       	CP,CS: out std_logic;
       	reloj: in std_logic;
-      	pcero: in std_logic
+      	pcero: in std_logic;
+      	llecoh: out std_logic;
+      	cohesp: in std_logic
       );
 end MECtra;
 
 architecture comportamiento of MECtra is
 type tipoestado is (PR,SE);
 signal EST, P_EST:tipoestado;
-signal llecoh, cohesp: std_logic;
 
 function flanco_ascendiente(signal reloj: std_logic)
 	return boolean is
@@ -26,9 +27,9 @@ end flanco_ascendiente;
 begin
 
 process(reloj,pcero) begin
-	if pcero='1' then EST<=PR; cohesp <= '0';
+	if pcero='1' then EST<=PR;
 	elsif flanco_ascendiente(reloj) then
-		EST <= P_EST; cohesp <= llecoh;
+		EST <= P_EST;
 	end if;
 end process;
 
@@ -81,7 +82,7 @@ pr_est_sal: process (EST, cohesp, TIEMPO) begin
 			CP <= '0';
 			CS <= '1';
 			if TIEMPO = '1' then
-				--INIC <= '1';
+				INIC <= '1';
 				P_EST <= PR;
 			else
 				P_EST <= SE;
