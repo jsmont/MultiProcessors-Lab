@@ -93,7 +93,7 @@ end process;
 
 
 llegcoh: process (EST, coche, cohesp, TIEMPO) begin
-	if (EST = PR and cohesp = '1' and TIEMPO = '1') then
+	if EST = SE then
 		llecoh <= '0';
 	elsif coche = '1' then
 		llecoh <= '1';
