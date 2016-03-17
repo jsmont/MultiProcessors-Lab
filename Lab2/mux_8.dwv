@@ -1,0 +1,23 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+
+entity mux is 
+generic (retardomux: time := 8ns);
+ port(
+		x	: in	std_logic_vector(7 downto 0);
+		y	: in	std_logic_vector(7 downto 0);
+		z	: out	std_logic_vector(7 downto 0);
+		sel	: in	std_logic
+	);
+
+end mux;
+
+
+architecture arch1 of mux is
+
+begin
+
+  -- Your VHDL code defining the model goes here
+        z <= x after retardomux when sel = '0' else y after retardomux;
+end arch1;

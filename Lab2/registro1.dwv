@@ -1,0 +1,25 @@
+library ieee ;
+use ieee.std_logic_1164.all;
+
+entity registro1 is
+port( D:	in std_logic;
+	  reloj:	in std_logic;
+	  Q:	out std_logic
+);
+end registro1;
+
+architecture comportamiento of registro1 is
+ 
+begin
+	
+    process(D, reloj)
+    begin
+
+    -- flanco ascendente de la senyal de reloj
+	if (reloj='1' and reloj'event) then
+	    Q <= D after 4 ns;
+	end if;
+
+    end process;	
+    
+end comportamiento;

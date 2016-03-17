@@ -1,0 +1,24 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+
+entity cmp12b is 
+generic (retardocomp: time := 8 ns);
+ port(
+		B	: in	std_logic_vector(11 downto 0);
+		A	: in	std_logic_vector(11 downto 0);
+		S	: out	std_logic
+	);
+
+end cmp12b;
+
+
+architecture comportamiento of cmp12b is
+
+begin
+
+  S <= (B(11) xnor A(11)) and (B(10) xnor A(10)) and (B(9) xnor A(9)) and (B(8) xnor A(8)) and
+       (B(7) xnor A(7)) and (B(6) xnor A(6)) and (B(5) xnor A(5)) and (B(4) xnor A(4)) and
+       (B(3) xnor A(3)) and (B(2) xnor A(2)) and (B(1) xnor A(1)) and (B(0) xnor A(0)) after retardocomp; 
+
+end comportamiento;
