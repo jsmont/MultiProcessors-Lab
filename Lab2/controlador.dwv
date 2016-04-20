@@ -1,0 +1,176 @@
+--while (true) {
+--	while (PET = NO) { };
+--	if (AF = acierto and LES = lectura) then
+--		LISTO = SI;
+--		muxL = contenedor;
+--	else
+--		MPET = peticion a memoria;
+--		MLES = LES;
+--		while (MLISTO = NO) { };
+--		if (LES = lectura) then
+--			muxE = memoria;
+--			muxL = memoria;
+--			PED = escribir campo datos;
+--			PEV = escribir estado;
+--			PEET = escribir etiquetas;
+--		else if (AF = acierto and LES = escritura) then
+--			muxE = procesador;
+--			PED = escribir campo datos;
+--		end if
+--	end if
+--}
+
+library ieee;
+use ieee.std_logic_1164.all;
+entity controlador_cache is
+        generic (retardo: time := 4 ns);
+        port (reloj, pcero: in STD_LOGIC;
+               LES: in STD_LOGIC;
+               PET: in STD_LOGIC;
+               LISTO: out STD_LOGIC;
+               
+               AF: in STD_LOGIC;
+               PED: out STD_LOGIC;
+               PEET: out STD_LOGIC;
+               PEV: out STD_LOGIC;
+               val: out STD_LOGIC;
+               
+               MLES: out STD_LOGIC;
+               MPET: out STD_LOGIC;
+               MLISTO: in STD_LOGIC;
+               muxL: out STD_LOGIC;
+               muxE: out STD_LOGIC;
+               VEST: out std_logic_vector (3 downto 0));
+   end;
+
+architecture comportamiento of controlador is
+constant UNO : std_logic := '1'; -- Constantes para establecer
+constant CERO : std_logic := '0'; -- y comprobar valores
+constant lectura : std_logic := '1';
+constant escritura : std_logic := '0';
+constant acierto : std_logic := '1';
+constant fallo : std_logic := '0';
+constant PETICION : std_logic := '1';
+constant NOPETICION : std_logic := '0';                     
+
+-- observación externa del estado
+constant VESTDESO: std_logic_vector :="1000"; -- Estado DESO
+constant VESTESP1: std_logic_vector :="0100"; -- Estado ESP1
+constant VESTESP2: std_logic_vector :="0010"; -- Estado ESP2
+constant VESTESP3: std_logic_vector :="0001"; -- Estado ESP3
+type tipoestado is (DES, ESP1, ESP2, ESP3); -- Estados
+signal estado, prxestado: tipoestado; -- Registro de estado
+
+
+-- señales temporales en el proceso de salida, sin sincronizar con la señal de reloj,
+-- correspondientes a las PED, PEV y PEET
+signal TPED: std_logic :='1';
+signal TPEV: std_logic :='1';
+signal TPEET: std_logic :='1';
+-- deteccion de flanco ascendente
+function flanco_ascendente (signal reloj: std_logic) return boolean is
+	variable flanco: boolean:= FALSE;
+begin
+	flanco := (reloj = '1' and reloj'event);
+	return (flanco);
+end flanco_ascendente;
+
+begin
+
+-- registro de estado
+process (reloj,pcero)
+begin
+	if pcero = UNO then
+		estado <= DES;
+		VEST <= VESTDESO;
+	elsif (flanco_ascendente(reloj)) then
+		estado <= prxestado;
+		case prxestado is
+			when DES => VEST <= VESTDESO after retardo;
+			when ESP1 => VEST <= VESTESP1 after retardo;
+			when ESP2 => VEST <= VESTESP2 after retardo;
+			when ESP3 => VEST <= VESTESP3 after retardo;
+		end case;
+	end if;
+end process;
+
+-- logica de proximo estado
+process(estado, LES, PET, AF, MLISTO, pcero)
+begin
+	prxestado <= estado;  --after retardo¿?
+	if (pcero = CERO) then
+	
+		prxestado <=
+			ESP1 when estado=DES and (AF='0' and LES='1')
+			else ESP2 when estado=DES and (AF='1' and LES='0')
+			else DES when estado\=DES and MLISTO=1
+			else estado when estado\=DES and MLISTO=0
+			else DES when estado=DES and (PET='0' or ( AF='1' and LES='1'))
+			else ESP3;
+		--case estado is
+			--when DES =>
+			--	if (PET='0' or ( AF='1' and LES='1')) then prxestado <= DES;  --after retardo¿?
+			--	elsif (AF='0' and LES='1') then prxestado <= ESP1;  --after retardo¿?
+			--	elsif (AF='1' and LES='0') then prxestado <= ESP2;  --after retardo¿?
+			--	else prxestado <= ESP3;
+			--	end if;
+			--when others =>
+			--	if ( MLISTO='1' ) then 
+			--		prxestado <= DES; 
+			--	end if;
+		--end case;
+	end if;
+end process;
+
+-- logica de salida
+process(estado, LES, PET, AF, MLISTO, pcero)
+begin
+	val <= UNO after retardo;
+	--...
+	if (pcero = CERO) then
+		--case estado is
+		--	when DESO =>
+		--	--...
+		--	when ESP1 =>
+		--	--...
+		--	when ESP2 =>
+		--	--...
+		--	when ESP3 =>
+		--	--...
+		--	when others =>
+		--	--...
+		--end case;
+
+-- SENSE CASE
+		MPET <= '1' when (estado = DES and PET = '1' and AF = '0' or LES = '0') else '0';
+		MLES <= LES; --necessari ¿?
+				
+		TPEET <= '1' when (estado = ESP1 and MLISTO = '1') else '0';
+		TPEV <= '1' when (estado = ESP1 and MLISTO = '1') else '0';
+		TPED <= '1' when (estado = ESP1 or estado = ESP2 and MLISTO = '1') else '0';
+		--val <= ¿?
+
+		muxL <= '1' when (estado = ESP1 and MLISTO = '1') else '0';
+		muxE <= '1' when (estado = ESP1 and MLISTO = '1') else '0';
+		
+		--LISTO <= MLISTO; --necessari ¿?
+
+-- if (PET = '1') === if PET  -  en senyals d'1 bit ¿?  => escurssar expressions
+
+	else
+		MPET <='0';
+		MLES <=LES;
+		TPEET <='0';
+		TPEV <='0';
+		TPED <='0';
+		val <='0';
+		muxL <='0';
+		muxE <='0';
+	end if;
+end process;
+
+-- actualizacion de cache
+	PED <= not (TPED and (not (reloj) )) after retardo;
+	PEET <= not (TPEET and (not (reloj) )) after retardo;
+	PEV <= not (TPEV and (not (reloj) )) after retardo;
+end comportamiento;
