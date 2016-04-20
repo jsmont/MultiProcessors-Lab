@@ -1,0 +1,24 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+
+entity tristate16 is 
+
+ port(
+		pe	: in	std_logic;
+		sal	: out	std_logic_vector(15 downto 0);
+		en	: in	std_logic_vector(15 downto 0)
+	);
+
+end tristate16;
+
+
+architecture arch1 of tristate16 is
+
+begin
+
+  with pe select
+      sal <= en when '1',
+             (others => 'z') when '0';
+
+end arch1;

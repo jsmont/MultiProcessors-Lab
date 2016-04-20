@@ -1,0 +1,24 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+
+entity tristate1 is 
+
+ port(
+		pe	: in	std_logic;
+		sal	: out	std_logic;
+		en	: in	std_logic
+	);
+
+end tristate1;
+
+
+architecture arch1 of tristate1 is
+
+begin
+
+  with pe select
+      sal <= en when '1',
+            'z' when '0';
+
+end arch1;
